@@ -37,8 +37,8 @@ variable "tags" {
   description = "Purview Account Name."
 }*/
 
-# variable "notused" {
-#   type        = string
-#   default     = "notused"
-#   description = "not used."
-# }
+variable "notused" {
+  type        = string
+  default     = "notused"
+  description = "not used."
+}
