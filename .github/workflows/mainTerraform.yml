@@ -1,0 +1,51 @@
+name: Terraform-Azure
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  codeAnalysis:
+    name: Code Analysis
+    uses: chambras/workflows/.github/workflows/staticCodeAnalysis.yml@main
+    with:
+      project-folder: Infrastructure/terraform-azure/
+
+  terraformAzureDev:
+    needs: [codeAnalysis]
+    name: Dev Build
+    uses: chambras/workflows/.github/workflows/terraformAzure.yml@main
+    # if: github.event_name == 'pull_request'
+    with:
+      terraform-version: 1.6.6
+      environment: Dev
+      destroy-environment: false
+      project-folder: Infrastructure/terraform-azure/
+      outputResourceID: rgName
+    secrets:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+  terraformAzureProd:
+    needs: [terraformAzureDev]
+    name: Prod Build
+    uses: chambras/workflows/.github/workflows/terraformAzure.yml@main
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    with:
+      terraform-version: 1.6.6
+      environment: Prod
+      destroy-environment: false
+      project-folder: Infrastructure/terraform-azure/
+      outputResourceID: rgName
+    secrets:
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
